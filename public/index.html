@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Consulta SIMIT</title>
+
+<style>
+body {
+    font-family: Arial;
+    background:#f5f5f5;
+    padding:30px;
+}
+
+h1 { text-align:center; }
+
+input, button {
+    padding:10px;
+    font-size:16px;
+}
+
+table {
+    border-collapse: collapse;
+    width:100%;
+    margin-top:20px;
+    background:white;
+}
+
+th, td {
+    border:1px solid #ccc;
+    padding:8px;
+    text-align:center;
+}
+
+th {
+    background:#007bff;
+    color:white;
+}
+</style>
+</head>
+<body>
+
+<h1>Consulta Multas SIMIT</h1>
+
+<input id="placa" placeholder="Ingrese placa">
+<button onclick="consultar()">Consultar</button>
+
+<table id="tabla" style="display:none;">
+<thead id="thead"></thead>
+<tbody id="tbody"></tbody>
+</table>
+
+<script>
+async function consultar() {
+    const placa = document.getElementById("placa").value;
+    if(!placa) return alert("Ingrese placa");
+
+    const res = await fetch("http://localhost:3000/simit/" + placa);
+    const data = await res.json();
+
+    if(!data.length){
+        alert("Sin resultados");
+        return;
+    }
+
+    const headers = Object.keys(data[0]);
+
+    document.getElementById("thead").innerHTML =
+        "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+
+    document.getElementById("tbody").innerHTML =
+        data.map(row =>
+            "<tr>" +
+            headers.map(h => `<td>${row[h]}</td>`).join("") +
+            "</tr>"
+        ).join("");
+
+    document.getElementById("tabla").style.display="table";
+}
+</script>
+
+</body>
+</html>
