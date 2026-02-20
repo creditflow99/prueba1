@@ -4,31 +4,35 @@ const { chromium } = require("playwright");
 const app = express();
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+  res.send("Servidor funcionando correctamente 🚀");
+});
+
 async function consultarSimit(placa) {
 
     const browser = await chromium.launch({
-        headless: true,   // 🔥 más rápido
-        args: ["--no-sandbox"]
+        headless: true,
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage"
+        ]
     });
 
     const page = await browser.newPage();
 
     try {
-
         await page.goto("https://consulta-simit.com.co/", {
             waitUntil: "domcontentloaded",
             timeout: 60000
         });
-     
 
         await page.fill("#txtBusqueda", placa);
         await page.click("#consultar");
 
-        // esperar tabla
         await page.waitForSelector("table", { timeout: 20000 });
 
         const data = await page.evaluate(() => {
-
             const filas = Array.from(document.querySelectorAll("table tr"))
                 .map(tr => tr.innerText.trim())
                 .filter(t => t.length > 20);
@@ -41,7 +45,6 @@ async function consultarSimit(placa) {
             let resultados = [];
 
             for (let i = 1; i < filas.length; i++) {
-
                 const valores = filas[i].split("\t");
                 let obj = {};
 
@@ -72,6 +75,6 @@ app.get("/simit/:placa", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor listo en puerto ${PORT}`);
 });
